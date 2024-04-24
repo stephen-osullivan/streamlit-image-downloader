@@ -4,6 +4,7 @@ import requests
 import concurrent.futures
 import glob
 import os
+import shutil
 import time
 from typing import List, Optional
 import zipfile
@@ -58,11 +59,11 @@ def download_images(
     print('Total Execution time:', time.time()-t0)
 
 
-def ddg_download(query, num_images:int, folder: Optional[str]):
+def ddg_download(query, num_images:int = 10, folder: str = 'downloads'):
     """
     download using duckduckgo
     """
-    search_results = DDGS().images(keywords='query', max_results=num_images)
+    search_results = DDGS().images(keywords=query, max_results=num_images)
     results  = download_images([r['image'] for r in search_results], save_folder = f'{folder}/{query.replace(" ", "-")}')
     return results
 
@@ -89,15 +90,22 @@ def find_images(folder: str):
     # Example usage
     return glob.glob(f'{folder}/*.jpg') + glob.glob(f'{folder}/*.png') 
 
-
-def delete_files(folder_path):
+def delete_subfolders(directory: str ='downloads'):
     """
-    Deletes all files in the given folder path.
+    Removes all subdirectories (but not the parent directory) in the specified directory.
     Args:
-        folder_path (str): The path to the folder where files need to be deleted.
+        directory (str): The path to the directory where subdirectories need to be removed.
+
+    # Example usage
+    remove_subdirectories("/path/to/parent/directory")
     """
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-            print(f"Deleted file: {file_path}")
+    if directory == "":
+        pass
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+            print(f"Removed directory: {item_path}")
+        else:
+            continue
+
