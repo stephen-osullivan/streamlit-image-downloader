@@ -1,0 +1,6 @@
+duckduckgo-search
+jupyter
+matplotlib
+pillow
+requests
+streamlit
