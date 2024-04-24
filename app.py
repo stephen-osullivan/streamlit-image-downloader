@@ -31,7 +31,6 @@ if num_downloaded > 0:
     st.image(
         images_downloaded[:num_display], use_column_width=True, caption=images_downloaded[:num_display])
 
-
 # allow the user to extract a zip file containing the images.
 zip_and_download = st.sidebar.button('Create Zip File')
 if zip_and_download:

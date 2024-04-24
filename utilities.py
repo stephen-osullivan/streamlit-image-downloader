@@ -26,7 +26,7 @@ def download_image(url: str, save_file: Optional[str] = None) -> bool:
             print(save_file, "downloaded successfully!")
         return url, save_file, True
     else:
-        print(f"Failed to download {save_file}.")
+        print(f"Failed to download {save_file} (non 200 response).")
         return url, save_file, False
   except requests.exceptions.RequestException as e:
         print(f"Error downloading {url}: {e}")
@@ -74,10 +74,9 @@ def ddg_download(query, num_images:int = 10, folder: str = 'downloads'):
 
     image_urls = [r['image'] for r in search_results] 
     # filter on pngs, jpgs
-    image_urls = [r for r in image_urls if r.split('.')[-1] in ['jpg', 'png']]
-    save_folder = f'{folder}/{query.replace(" ", "-")}'
-    results  = download_images(
-        image_urls, save_folder = save_folder)
+    #image_urls = [r for r in image_urls if r.split('.')[-1] in ['jpg', 'png']]
+    save_folder = os.path.join(folder,query.replace(" ", "-"))
+    results = download_images(image_urls, save_folder = save_folder)
     delete_corrupted_images(save_folder)
 
 def zip_files(zip_filename, file_paths):
@@ -102,7 +101,11 @@ def find_images(folder: str):
     find all images in a folder
     """
     # Example usage
-    return glob.glob(f'{folder}/**/*.jpg', recursive=True) + glob.glob(f'{folder}/*.png') 
+    image_formats = ['jpg','png','webp']
+    image_list = []
+    for format in image_formats:
+        image_list += glob.glob(f'{folder}/**/*.{format}*', recursive=True)
+    return image_list
 
 def delete_subfolders(directory: str ='downloads'):
     """
