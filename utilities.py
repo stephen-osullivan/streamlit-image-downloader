@@ -1,4 +1,5 @@
 from duckduckgo_search import DDGS
+from PIL import Image
 import requests
 
 import concurrent.futures
@@ -82,13 +83,23 @@ def zip_files(zip_filename, file_paths):
     with zipfile.ZipFile(zip_filename, 'w') as zip_file:
         for file_path in file_paths:
             zip_file.write(file_path)
+    print('Created zip file:', zip_filename)
 
 def find_images(folder: str):
     """
     find all images in a folder
     """
     # Example usage
-    return glob.glob(f'{folder}/*.jpg') + glob.glob(f'{folder}/*.png') 
+    return glob.glob(f'{folder}/**/*.jpg', recursive=True) + glob.glob(f'{folder}/*.png') 
+
+def delete_corrupted_images(folder:str):
+    for file in find_images(folder):
+        try:
+            Image.open(file)
+        except Exception as e:
+            os.remove(file)
+            print(f'Removed {file} due to following exception:\n {e}')
+
 
 def delete_subfolders(directory: str ='downloads'):
     """
@@ -106,6 +117,11 @@ def delete_subfolders(directory: str ='downloads'):
         if os.path.isdir(item_path):
             shutil.rmtree(item_path)
             print(f"Removed directory: {item_path}")
+        elif os.path.isfile(item_path):
+            os.remove(item_path)
+            print(f"Removed file: {item_path}")
+
+            
         else:
             continue
 
