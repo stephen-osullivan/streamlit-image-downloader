@@ -1,12 +1,17 @@
+from duckduckgo_search import DDGS
 import requests
 
 import concurrent.futures
+import glob
 import os
 import time
 from typing import List, Optional
 import zipfile
 
 def download_image(url: str, save_file: Optional[str] = None) -> bool:
+  """
+  downloads a single image from a url and saves it
+  """
   try:
     response = requests.get(url)
     if save_file is None:
@@ -53,6 +58,14 @@ def download_images(
     print('Total Execution time:', time.time()-t0)
 
 
+def ddg_download(query, num_images:int, folder: Optional[str]):
+    """
+    download using duckduckgo
+    """
+    search_results = DDGS().images(keywords='query', max_results=num_images)
+    results  = download_images([r['image'] for r in search_results], save_folder = f'{folder}/{query.replace(" ", "-")}')
+    return results
+
 def zip_files(zip_filename, file_paths):
     """
     Creates a ZIP archive containing the files specified by the file_paths.
@@ -69,4 +82,22 @@ def zip_files(zip_filename, file_paths):
         for file_path in file_paths:
             zip_file.write(file_path)
 
+def find_images(folder: str):
+    """
+    find all images in a folder
+    """
+    # Example usage
+    return glob.glob(f'{folder}/*.jpg') + glob.glob(f'{folder}/*.png') 
 
+
+def delete_files(folder_path):
+    """
+    Deletes all files in the given folder path.
+    Args:
+        folder_path (str): The path to the folder where files need to be deleted.
+    """
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            print(f"Deleted file: {file_path}")
