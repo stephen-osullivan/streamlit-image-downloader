@@ -111,7 +111,12 @@ def delete_subfolders(directory: str ='downloads'):
     remove_subdirectories("/path/to/parent/directory")
     """
     if directory == "":
-        pass
+        return False
+    
+    if ~os.path.exists(directory):
+        print('Directory does not exist:', directory)
+        return False
+
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
         if os.path.isdir(item_path):
@@ -120,8 +125,8 @@ def delete_subfolders(directory: str ='downloads'):
         elif os.path.isfile(item_path):
             os.remove(item_path)
             print(f"Removed file: {item_path}")
-
             
         else:
             continue
+    return True
 

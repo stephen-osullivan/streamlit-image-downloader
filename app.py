@@ -13,6 +13,7 @@ num_images = st.sidebar.slider('How many images', 0, 100, 10)
 download = st.sidebar.button('Get Images')    
 
 if download:
+    
     delete_subfolders('downloads')
     download_folder = search_query.replace(" ", "-")
     results = ddg_download(search_query, num_images)
