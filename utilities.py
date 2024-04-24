@@ -32,7 +32,6 @@ def download_image(url: str, save_file: Optional[str] = None) -> bool:
         print(f"Error downloading {url}: {e}")
         return url, save_file, False
      
-
 def download_images(
     urls: List[str], 
     save_files: Optional[List[str]] = None, 
@@ -47,7 +46,7 @@ def download_images(
         os.makedirs(save_folder, exist_ok=True)
         save_files = [f'{save_folder}/{save_file}' for save_file in save_files]
     
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
         # Submit the tasks to the executor
         threads = []
         for url, save_file in zip(urls, save_files):
@@ -59,14 +58,27 @@ def download_images(
         
     print('Total Execution time:', time.time()-t0)
 
+def delete_corrupted_images(folder:str):
+    for file in find_images(folder):
+        try:
+            Image.open(file)
+        except Exception as e:
+            os.remove(file)
+            print(f'Removed {file} due to following exception:\n {e}')
 
 def ddg_download(query, num_images:int = 10, folder: str = 'downloads'):
     """
     download using duckduckgo
     """
-    search_results = DDGS().images(keywords=query, max_results=num_images)
-    results  = download_images([r['image'] for r in search_results], save_folder = f'{folder}/{query.replace(" ", "-")}')
-    return results
+    search_results = DDGS().images(keywords=query, max_results=num_images, safesearch='off')
+
+    image_urls = [r['image'] for r in search_results] 
+    # filter on pngs, jpgs
+    image_urls = [r for r in image_urls if r.split('.')[-1] in ['jpg', 'png']]
+    save_folder = f'{folder}/{query.replace(" ", "-")}'
+    results  = download_images(
+        image_urls, save_folder = save_folder)
+    delete_corrupted_images(save_folder)
 
 def zip_files(zip_filename, file_paths):
     """
@@ -92,15 +104,6 @@ def find_images(folder: str):
     # Example usage
     return glob.glob(f'{folder}/**/*.jpg', recursive=True) + glob.glob(f'{folder}/*.png') 
 
-def delete_corrupted_images(folder:str):
-    for file in find_images(folder):
-        try:
-            Image.open(file)
-        except Exception as e:
-            os.remove(file)
-            print(f'Removed {file} due to following exception:\n {e}')
-
-
 def delete_subfolders(directory: str ='downloads'):
     """
     Removes all subdirectories (but not the parent directory) in the specified directory.
@@ -113,7 +116,7 @@ def delete_subfolders(directory: str ='downloads'):
     if directory == "":
         return False
     
-    if ~os.path.exists(directory):
+    if not os.path.isdir(directory):
         print('Directory does not exist:', directory)
         return False
 
@@ -125,7 +128,6 @@ def delete_subfolders(directory: str ='downloads'):
         elif os.path.isfile(item_path):
             os.remove(item_path)
             print(f"Removed file: {item_path}")
-            
         else:
             continue
     return True
