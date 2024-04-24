@@ -28,7 +28,7 @@ def download_image(url: str, save_file: Optional[str] = None) -> bool:
     else:
         print(f"Failed to download {save_file} (non 200 response).")
         return url, save_file, False
-  except requests.exceptions.RequestException as e:
+  except Exception as e:
         print(f"Error downloading {url}: {e}")
         return url, save_file, False
      
@@ -70,12 +70,12 @@ def ddg_download(query, num_images:int = 10, folder: str = 'downloads'):
     """
     download using duckduckgo
     """
-    search_results = DDGS().images(keywords=query, max_results=num_images, safesearch='off')
+    search_results = DDGS().images(keywords=query, max_results=num_images, safesearch='moderate')
 
     image_urls = [r['image'] for r in search_results] 
     # filter on pngs, jpgs
     #image_urls = [r for r in image_urls if r.split('.')[-1] in ['jpg', 'png']]
-    save_folder = os.path.join(folder,query.replace(" ", "-"))
+    save_folder = os.path.join(folder, query.replace(" ", "-"))
     results = download_images(image_urls, save_folder = save_folder)
     delete_corrupted_images(save_folder)
 
